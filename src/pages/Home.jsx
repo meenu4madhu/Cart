@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import { Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllProducts } from '../redux/slices/productSlice'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons'
 
 
 
@@ -11,13 +13,38 @@ function Home() {
   const dispatch=useDispatch()
   const {loading,allProducts,error}=useSelector(state=>state.productReducer)
   // console.log(allProducts);
-  
+  const [currentPage,setCurrentPage]=useState(1)
+  const productsperpage = 8;
+const totalpage = Math.ceil(allProducts?.length / productsperpage);
+
+const pageItemLastIndex = currentPage * productsperpage;
+const pageItemStartIndex = pageItemLastIndex - productsperpage;
+
+const visibleProductArray = allProducts?.slice(
+  pageItemStartIndex,
+  pageItemLastIndex
+);
+
+
   useEffect(()=>{
     dispatch(getAllProducts())
   },[])
+
+  const navigateNextPage=()=>{
+    if(currentPage!=totalpage)
+    {
+      setCurrentPage(currentPage+1)
+    }
+  }
+   const navigatePrevPage=()=>{
+    if(currentPage!=1)
+    {
+      setCurrentPage(currentPage-1)
+    }
+  }
   return (
     <>
-    <Header/>
+    <Header insideHome={true}/>
    <div className='container py-5'>
     {
       loading? 
@@ -26,7 +53,7 @@ function Home() {
       <div className="row my-5">
       {/* duplicate */}
      { allProducts?.length>0?
-      allProducts?.map((products)=>(
+      visibleProductArray?.map((products)=>(
       <div key={products?.id} className="col-md-3 mb-2">
         {/* card */}
          <Card style={{ width: '18rem' }}>
@@ -40,7 +67,13 @@ function Home() {
       ))
       :
       <p className='text-center'>Product not found</p>
-}
+    }
+    <div className="my-3 text-center d-flex flex-row justify-content-center align-items-center">
+      <button onClick={navigatePrevPage} className='btn '><FontAwesomeIcon icon={faBackward}/></button>
+      
+    <p className="fw-bolder m-2">{currentPage} of {totalpage}</p>
+        <button onClick={navigateNextPage} className='btn '><FontAwesomeIcon icon={faForward}/></button>
+    </div>
     </div>
     }  
     </div> 
